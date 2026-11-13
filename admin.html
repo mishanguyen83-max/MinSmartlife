@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản trị Min Smart Life — CMS</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
+<style>
+:root{--primary:#0A4BA8;--dark:#03224E;--accent:#FF9E00;--bg:#EEF3FB;--card:#fff;--text:#0A2149;--muted:#5B6B85;--border:#D5E2F4;--danger:#DC2626;--ok:#0E9F6E}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{font-family:"Nunito Sans",Arial,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+h1,h2,h3,h4,strong,b{font-family:Arial,Helvetica,sans-serif}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit;padding:10px 12px;border:2px solid var(--border);border-radius:10px;background:#fff;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)}
+label{font-weight:700;font-size:.88rem;display:block;margin-bottom:5px}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 18px 60px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--accent);color:#221500;font-weight:800;border:0;padding:11px 20px;border-radius:11px;transition:filter .15s,transform .15s}
+.btn:hover{filter:brightness(1.06)} .btn:active{transform:scale(.98)}
+.btn-blue{background:var(--primary);color:#fff}
+.btn-ghost{background:#fff;border:2px solid var(--border);color:var(--text)}
+.btn-danger{background:#FDECEC;color:var(--danger);border:2px solid #F6CACA}
+.btn-sm{padding:7px 13px;font-size:.86rem;border-radius:9px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 6px 20px rgba(3,34,78,.06)}
+/* Auth */
+.auth-box{max-width:430px;margin:7vh auto;padding:30px}
+.auth-box h1{font-size:1.45rem;color:var(--dark);margin-bottom:4px}
+.auth-box .sub{color:var(--muted);margin-bottom:20px}
+.auth-box form{display:grid;gap:14px}
+.auth-err{color:var(--danger);font-weight:700;font-size:.9rem;min-height:1.2em}
+.mode-note{margin-top:16px;font-size:.83rem;color:var(--muted);background:var(--bg);border-radius:10px;padding:10px 13px}
+/* App layout */
+.topbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.topbar img{height:44px;width:auto}
+.topbar .spacer{flex:1}
+.badge{display:inline-block;padding:4px 11px;border-radius:999px;font-size:.76rem;font-weight:800;background:#E1EAF6;color:var(--dark)}
+.badge.server{background:#DFF7EC;color:#046C4E}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:13px;margin-bottom:18px}
+.stat{padding:16px 18px}
+.stat span{color:var(--muted);font-weight:700;font-size:.85rem}
+.stat strong{display:block;font-size:1.55rem;color:var(--dark);margin-top:2px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab{border:2px solid var(--border);background:#fff;font-weight:800;padding:10px 18px;border-radius:999px}
+.tab.active{background:var(--dark);border-color:var(--dark);color:#fff}
+.panel{padding:20px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+.toolbar input,.toolbar select{width:auto;flex:1;min-width:170px}
+table{width:100%;border-collapse:collapse;font-size:.93rem}
+th,td{text-align:left;padding:10px 9px;border-bottom:1px solid #E7EEF8;vertical-align:top}
+th{color:var(--dark);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}
+tr:hover td{background:#F7FAFF}
+.status{padding:6px 9px;border-radius:8px;border:2px solid var(--border);font-weight:700;width:auto}
+.st{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.78rem;font-weight:800;white-space:nowrap}
+.st-new{background:#FFF3D6;color:#8A5A00}.st-contacted{background:#E1EAF6;color:#0A4BA8}.st-confirmed{background:#DFF7EC;color:#046C4E}
+.st-shipping{background:#E9E5FF;color:#4C2FB3}.st-done{background:#D1FAE5;color:#065F46}.st-cancelled{background:#FDECEC;color:#B42318}
+.thumb{width:52px;height:52px;object-fit:cover;border-radius:9px;background:#EEF3FB}
+.empty{color:var(--muted);text-align:center;padding:28px 0;font-weight:700}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid .full{grid-column:1/-1}
+.form-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.detail-box{background:#F7FAFF;border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin:8px 0 14px;font-size:.92rem}
+.detail-box ul{margin:6px 0 6px 18px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--dark);color:#fff;font-weight:700;padding:12px 22px;border-radius:12px;box-shadow:0 14px 30px rgba(0,0,0,.25);z-index:99}
+@media (max-width:720px){.form-grid{grid-template-columns:1fr}table{font-size:.85rem}th,td{padding:8px 6px}}
+</style>
+</head>
+<body>
+
+<!-- ===== AUTH ===== -->
+<section id="authView" class="wrap">
+  <div class="card auth-box">
+    <img src="assets/img/logo.png" alt="Min Smart Life" style="height:52px;width:auto;margin-bottom:14px">
+    <div id="setupBox" hidden>
+      <h1>Tạo tài khoản quản trị viên</h1>
+      <p class="sub">Chưa có tài khoản quản trị. Hãy tạo tài khoản đầu tiên để bắt đầu quản lý shop.</p>
+      <form id="setupForm">
+        <div><label for="suUser">Tên đăng nhập</label><input id="suUser" autocomplete="username" required></div>
+        <div><label for="suPass">Mật khẩu (tối thiểu 6 ký tự)</label><input id="suPass" type="password" autocomplete="new-password" required minlength="6"></div>
+        <div><label for="suPass2">Nhập lại mật khẩu</label><input id="suPass2" type="password" autocomplete="new-password" required></div>
+        <p class="auth-err" id="setupErr"></p>
+        <button class="btn" type="submit">Tạo tài khoản quản trị</button>
+      </form>
+    </div>
+    <div id="loginBox" hidden>
+      <h1>Đăng nhập quản trị</h1>
+      <p class="sub">Quản lý đơn hàng, khách hàng và sản phẩm của Min Smart Life.</p>
+      <form id="loginForm">
+        <div><label for="liUser">Tên đăng nhập</label><input id="liUser" autocomplete="username" required></div>
+        <div><label for="liPass">Mật khẩu</label><input id="liPass" type="password" autocomplete="current-password" required></div>
+        <p class="auth-err" id="loginErr"></p>
+        <button class="btn" type="submit">Đăng nhập</button>
+      </form>
+    </div>
+    <p class="mode-note" id="modeNote">Đang kiểm tra chế độ lưu trữ...</p>
+  </div>
+</section>
+
+<!-- ===== APP ===== -->
+<section id="appView" class="wrap" hidden>
+  <div class="topbar">
+    <img src="assets/img/logo.png" alt="Min Smart Life">
+    <span class="badge" id="modeBadge">Chế độ nội bộ</span>
+    <span class="spacer"></span>
+    <span id="adminName" style="font-weight:800"></span>
+    <a class="btn btn-ghost btn-sm" href="index.html?tu_cms=1">Xem website</a>
+    <button class="btn btn-ghost btn-sm" id="logoutBtn">Đăng xuất</button>
+  </div>
+
+  <div class="stats">
+    <div class="card stat"><span>Tổng đơn hàng</span><strong id="stOrders">0</strong></div>
+    <div class="card stat"><span>Đơn mới chờ xử lý</span><strong id="stNew">0</strong></div>
+    <div class="card stat"><span>Doanh thu (đơn hoàn thành)</span><strong id="stRevenue">0₫</strong></div>
+    <div class="card stat"><span>Khách hàng</span><strong id="stCustomers">0</strong></div>
+    <div class="card stat"><span>Sản phẩm đang bán</span><strong id="stProducts">0</strong></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="orders">Đơn hàng</button>
+    <button class="tab" data-tab="customers">Khách hàng</button>
+    <button class="tab" data-tab="products">Sản phẩm</button>
+    <button class="tab" data-tab="accounts">Tài khoản</button>
+  </div>
+
+  <!-- Orders -->
+  <div class="card panel" id="tab-orders">
+    <div class="toolbar">
+      <input id="orderSearch" type="search" placeholder="Tìm theo mã đơn, tên khách, số điện thoại...">
+      <select id="orderFilter">
+        <option value="">Tất cả trạng thái</option>
+        <option value="new">Mới</option><option value="contacted">Đã liên hệ</option>
+        <option value="confirmed">Đã xác nhận</option><option value="shipping">Đang giao</option>
+        <option value="done">Hoàn thành</option><option value="cancelled">Đã huỷ</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" id="exportOrders">Xuất CSV</button>
+    </div>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Mã đơn</th><th>Thời gian</th><th>Khách hàng</th><th>Sản phẩm</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead>
+      <tbody id="orderRows"></tbody>
+    </table></div>
+    <p class="empty" id="orderEmpty" hidden>Chưa có đơn hàng nào. Đơn sẽ xuất hiện tại đây ngay khi khách đặt hàng trên website.</p>
+    <div id="orderDetail"></div>
+  </div>
+
+  <!-- Customers -->
+  <div class="card panel" id="tab-customers" hidden>
+    <div class="toolbar"><input id="custSearch" type="search" placeholder="Tìm theo tên, số điện thoại, email..."></div>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Khách hàng</th><th>Số điện thoại</th><th>Email</th><th>Địa chỉ</th><th>Số đơn</th><th>Tổng chi tiêu</th><th>Đơn gần nhất</th></tr></thead>
+      <tbody id="custRows"></tbody>
+    </table></div>
+    <p class="empty" id="custEmpty" hidden>Chưa có khách hàng nào.</p>
+  </div>
+
+  <!-- Accounts -->
+  <div class="card panel" id="tab-accounts" hidden>
+    <h3 style="margin-bottom:10px">Tài khoản quản trị viên</h3>
+    <ul id="adminList" style="margin:0 0 20px 18px"></ul>
+    <h4 style="margin-bottom:10px">Thêm tài khoản quản trị viên</h4>
+    <form id="addAdminForm" style="display:grid;gap:13px;max-width:430px">
+      <div><label for="naUser">Tên đăng nhập mới</label><input id="naUser" autocomplete="off" required></div>
+      <div><label for="naPass">Mật khẩu (tối thiểu 6 ký tự)</label><input id="naPass" type="password" autocomplete="new-password" required minlength="6"></div>
+      <div><label for="naPass2">Nhập lại mật khẩu</label><input id="naPass2" type="password" autocomplete="new-password" required></div>
+      <p class="auth-err" id="naErr"></p>
+      <div><button class="btn btn-blue" type="submit">Tạo thêm tài khoản</button></div>
+    </form>
+  </div>
+
+  <!-- Products -->
+  <div class="card panel" id="tab-products" hidden>
+    <div class="toolbar">
+      <input id="prodSearch" type="search" placeholder="Tìm sản phẩm theo tên, mã SKU, danh mục...">
+      <button class="btn btn-sm" id="addProductBtn">+ Thêm sản phẩm</button>
+    </div>
+    <form id="productForm" class="card" style="padding:18px;margin-bottom:18px" hidden>
+      <h3 id="pfTitle" style="margin-bottom:14px">Thêm sản phẩm</h3>
+      <input type="hidden" id="pfIndex">
+      <div class="form-grid">
+        <div class="full"><label for="pfName">Tên sản phẩm *</label><input id="pfName" required></div>
+        <div><label for="pfSku">Mã SKU</label><input id="pfSku" placeholder="Ví dụ: BM05"></div>
+        <div><label for="pfPrice">Giá (VNĐ) *</label><input id="pfPrice" type="number" min="0" step="1000" required></div>
+        <div><label for="pfCategory">Danh mục</label><input id="pfCategory" list="catList" placeholder="Chọn hoặc gõ danh mục"><datalist id="catList"></datalist></div>
+        <div><label for="pfSold">Đã bán</label><input id="pfSold" type="number" min="0" value="0"></div>
+        <div class="full"><label for="pfImage">Ảnh sản phẩm chính — dán URL hoặc tải ảnh từ máy lên</label>
+        <input id="pfImage" placeholder="https://...">
+        <div style="display:flex;gap:12px;align-items:center;margin-top:9px;flex-wrap:wrap">
+          <input type="file" id="pfUpload" accept="image/*" style="width:auto;border:0;padding:0">
+          <img id="pfPreview" class="thumb" alt="" hidden>
+          <span style="font-size:.82rem;color:var(--muted)">Ảnh tải lên tự nén tối đa 1000px cho nhẹ; hoặc dán URL ảnh có sẵn.</span>
+        </div></div>
+        <div><label for="pfFactory">Xuất xứ</label><input id="pfFactory" placeholder="Ví dụ: Made in Germany"></div>
+        <div><label for="pfImages">Link ảnh phụ (mỗi link 1 dòng)</label><textarea id="pfImages" rows="2"></textarea></div>
+        <div class="full"><label for="pfDesc">Mô tả / điểm nổi bật (mỗi ý 1 dòng)</label><textarea id="pfDesc" rows="4"></textarea></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-blue" type="submit">Lưu sản phẩm</button>
+        <button class="btn btn-ghost" type="button" id="pfCancel">Huỷ</button>
+      </div>
+    </form>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Ảnh</th><th>Sản phẩm</th><th>SKU</th><th>Danh mục</th><th>Giá</th><th>Đã bán</th><th></th></tr></thead>
+      <tbody id="prodRows"></tbody>
+    </table></div>
+    <p class="empty" id="prodEmpty" hidden>Chưa có sản phẩm nào.</p>
+  </div>
+</section>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="assets/js/products.js"></script>
+<script>
+(function () {
+  "use strict";
+  /* ============ Tầng dữ liệu: ưu tiên Cloudflare API (KV), không có thì dùng localStorage ============ */
+  var MODE = "local";
+  var token = sessionStorage.getItem("msl_admin_token") || "";
+  var LS = {
+    get: function (k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } },
+    set: function (k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+  };
+  function api(path, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+    if (token) opts.headers.Authorization = "Bearer " + token;
+    return fetch(path, opts).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, data: j }; }); });
+  }
+  function sha256(text) {
+    if (window.crypto && crypto.subtle) {
+      return crypto.subtle.digest("SHA-256", new TextEncoder().encode("msl::" + text)).then(function (buf) {
+        return [...new Uint8Array(buf)].map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+      });
+    }
+    var h = 0; for (var i = 0; i < text.length; i++) { h = (h * 31 + text.charCodeAt(i)) >>> 0; }
+    return Promise.resolve("fnv" + h.toString(16));
+  }
+  var DB = {
+    detect: function () {
+      if (typeof fetch !== "function" || !/^https?:$/.test(location.protocol)) { MODE = "local"; return Promise.resolve(); }
+      return fetch("/api/health").then(function (r) { return r.json(); }).then(function (j) { MODE = j && j.ok && j.kv ? "server" : "local"; }).catch(function () { MODE = "local"; });
+    },
+    adminsLocal: function () {
+      var list = LS.get("msl_admins", null);
+      if (!list) { var legacy = LS.get("msl_admin", null); list = legacy ? [legacy] : []; LS.set("msl_admins", list); }
+      return list;
+    },
+    hasAdmin: function () {
+      if (MODE === "server") return api("/api/auth").then(function (r) { return r.data.hasAdmin; });
+      return Promise.resolve(DB.adminsLocal().length > 0);
+    },
+    listAdmins: function () {
+      if (MODE === "server") return api("/api/auth", { method: "POST", body: JSON.stringify({ action: "list" }) }).then(function (r) { return r.data.admins || []; });
+      return Promise.resolve(DB.adminsLocal().map(function (x) { return x.username; }));
+    },
+    createAdmin: function (user, pass) {
+      if (MODE === "server") return api("/api/auth", { method: "POST", body: JSON.stringify({ action: "create", username: user, password: pass }) }).then(function (r) { if (!r.ok) throw new Error(r.data.error || "Không tạo được tài khoản"); });
+      return sha256(pass).then(function (hash) {
+        var list = DB.adminsLocal();
+        if (list.some(function (x) { return x.username === user; })) throw new Error("Tên đăng nhập đã tồn tại");
+        list.push({ username: user, passHash: hash }); LS.set("msl_admins", list);
+      });
+    },
+    setup: function (user, pass) {
+      if (MODE === "server") return api("/api/auth", { method: "POST", body: JSON.stringify({ action: "setup", username: user, password: pass }) }).then(function (r) { if (!r.ok) throw new Error(r.data.error || "Không tạo được tài khoản"); token = r.data.token; sessionStorage.setItem("msl_admin_token", token); });
+      return sha256(pass).then(function (hash) { LS.set("msl_admins", [{ username: user, passHash: hash }]); sessionStorage.setItem("msl_admin_user", user); });
+    },
+    login: function (user, pass) {
+      if (MODE === "server") return api("/api/auth", { method: "POST", body: JSON.stringify({ action: "login", username: user, password: pass }) }).then(function (r) { if (!r.ok) throw new Error(r.data.error || "Sai thông tin đăng nhập"); token = r.data.token; sessionStorage.setItem("msl_admin_token", token); sessionStorage.setItem("msl_admin_user", user); });
+      return sha256(pass).then(function (hash) {
+        var a = DB.adminsLocal().find(function (x) { return x.username === user; });
+        if (!a || a.passHash !== hash) throw new Error("Sai tên đăng nhập hoặc mật khẩu");
+        sessionStorage.setItem("msl_admin_user", user);
+      });
+    },
+    loggedIn: function () {
+      if (MODE === "server") return !!token;
+      return !!sessionStorage.getItem("msl_admin_user");
+    },
+    logout: function () { token = ""; sessionStorage.removeItem("msl_admin_token"); sessionStorage.removeItem("msl_admin_user"); },
+    orders: function () {
+      if (MODE === "server") return api("/api/orders").then(function (r) { return r.data.orders || []; });
+      return Promise.resolve(LS.get("msl_orders", []));
+    },
+    updateOrder: function (id, status) {
+      if (MODE === "server") return api("/api/orders", { method: "POST", body: JSON.stringify({ action: "update", id: id, status: status }) });
+      var arr = LS.get("msl_orders", []); arr.forEach(function (o) { if (o.id === id) o.status = status; }); LS.set("msl_orders", arr);
+      return Promise.resolve();
+    },
+    deleteOrder: function (id) {
+      if (MODE === "server") return api("/api/orders", { method: "POST", body: JSON.stringify({ action: "delete", id: id }) });
+      LS.set("msl_orders", LS.get("msl_orders", []).filter(function (o) { return o.id !== id; }));
+      return Promise.resolve();
+    },
+    products: function () {
+      if (MODE === "server") return api("/api/products").then(function (r) { return (r.data.products && r.data.products.length) ? r.data.products : (window.MSL_PRODUCTS || []); });
+      var saved = LS.get("msl_products", null);
+      return Promise.resolve(saved && saved.length ? saved : (window.MSL_PRODUCTS || []));
+    },
+    saveProducts: function (list) {
+      if (MODE === "server") return api("/api/products", { method: "POST", body: JSON.stringify({ products: list }) });
+      LS.set("msl_products", list);
+      return Promise.resolve();
+    }
+  };
+
+  /* ============ UI ============ */
+  var $ = function (id) { return document.getElementById(id); };
+  var STATUS = { new: ["Mới", "st-new"], contacted: ["Đã liên hệ", "st-contacted"], confirmed: ["Đã xác nhận", "st-confirmed"], shipping: ["Đang giao", "st-shipping"], done: ["Hoàn thành", "st-done"], cancelled: ["Đã huỷ", "st-cancelled"] };
+  var orders = [], products = [];
+  function fmt(n) { return Number(n || 0).toLocaleString("vi-VN") + "₫"; }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function toast(msg) { var t = $("toast"); t.textContent = msg; t.hidden = false; setTimeout(function () { t.hidden = true; }, 2600); }
+  function dateFmt(iso) { try { var d = new Date(iso); return d.toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }); } catch (e) { return iso || ""; } }
+
+  function showAuth() {
+    $("appView").hidden = true; $("authView").hidden = false;
+    $("modeNote").textContent = MODE === "server"
+      ? "Chế độ máy chủ Cloudflare: dữ liệu lưu trên hệ thống, quản trị viên xem được đơn từ mọi thiết bị."
+      : "Chế độ nội bộ (local): dữ liệu lưu trong trình duyệt này — phù hợp để xem thử và dùng trên 1 máy. Để nhận đơn từ điện thoại của khách về một nơi, hãy bật chế độ Cloudflare KV theo hướng dẫn trong README.";
+    DB.hasAdmin().then(function (has) { $("setupBox").hidden = has; $("loginBox").hidden = !has; });
+  }
+  function showApp() {
+    $("authView").hidden = true; $("appView").hidden = false;
+    $("modeBadge").textContent = MODE === "server" ? "Chế độ máy chủ Cloudflare" : "Chế độ nội bộ (trình duyệt này)";
+    $("modeBadge").classList.toggle("server", MODE === "server");
+    $("adminName").textContent = sessionStorage.getItem("msl_admin_user") || "Admin";
+    refresh();
+  }
+  function refresh() {
+    Promise.all([DB.orders(), DB.products()]).then(function (res) {
+      orders = res[0]; products = res[1];
+      renderStats(); renderOrders(); renderCustomers(); renderProducts(); renderAccounts();
+    });
+  }
+  function customersAgg() {
+    var map = {};
+    orders.forEach(function (o) {
+      var c = o.customer || {}; var key = (c.phone || "").replace(/\s/g, "") || c.email || "unknown";
+      if (!map[key]) map[key] = { name: c.name || "", phone: c.phone || "", email: c.email || "", address: c.address || "", count: 0, spent: 0, last: o.createdAt };
+      map[key].count++; if (o.status !== "cancelled") map[key].spent += Number(o.total || 0);
+      if (o.createdAt > map[key].last) map[key].last = o.createdAt;
+      if (c.address) map[key].address = c.address; if (c.name) map[key].name = c.name; if (c.email) map[key].email = c.email;
+    });
+    return Object.values(map).sort(function (a, b) { return b.spent - a.spent; });
+  }
+  function renderStats() {
+    $("stOrders").textContent = orders.length;
+    $("stNew").textContent = orders.filter(function (o) { return o.status === "new"; }).length;
+    $("stRevenue").textContent = fmt(orders.filter(function (o) { return o.status === "done"; }).reduce(function (s, o) { return s + Number(o.total || 0); }, 0));
+    $("stCustomers").textContent = customersAgg().length;
+    $("stProducts").textContent = products.length;
+  }
+  function renderOrders() {
+    var q = ($("orderSearch").value || "").toLowerCase();
+    var f = $("orderFilter").value;
+    var list = orders.filter(function (o) {
+      var c = o.customer || {};
+      var hay = (o.id + " " + c.name + " " + c.phone + " " + c.email).toLowerCase();
+      return (!q || hay.indexOf(q) >= 0) && (!f || o.status === f);
+    });
+    $("orderEmpty").hidden = list.length > 0;
+    $("orderRows").innerHTML = list.map(function (o) {
+      var c = o.customer || {};
+      var itemsTxt = (o.items || []).map(function (i) { return i.qty + " × " + i.name; }).join("<br>");
+      var opts = Object.keys(STATUS).map(function (k) { return '<option value="' + k + '"' + (o.status === k ? " selected" : "") + ">" + STATUS[k][0] + "</option>"; }).join("");
+      return "<tr><td><b>" + esc(o.id) + "</b></td><td>" + dateFmt(o.createdAt) + "</td>"
+        + "<td><b>" + esc(c.name) + "</b><br>" + esc(c.phone) + "<br><span style='color:var(--muted)'>" + esc(c.email) + "</span></td>"
+        + "<td>" + itemsTxt + "</td><td><b>" + fmt(o.total) + "</b></td>"
+        + '<td><span class="st ' + (STATUS[o.status] || STATUS.new)[1] + '">' + (STATUS[o.status] || STATUS.new)[0] + '</span><br><select class="status" data-status="' + o.id + '">' + opts + "</select></td>"
+        + '<td><button class="btn btn-ghost btn-sm" data-view="' + o.id + '">Chi tiết</button> <button class="btn btn-danger btn-sm" data-del-order="' + o.id + '">Xoá</button></td></tr>';
+    }).join("");
+  }
+  function renderAccounts() {
+    DB.listAdmins().then(function (names) {
+      $("adminList").innerHTML = names.map(function (n) { return "<li><b>" + esc(n) + "</b></li>"; }).join("") || "<li>Chưa có tài khoản nào</li>";
+    }).catch(function () {});
+  }
+  function renderCustomers() {
+    var q = ($("custSearch").value || "").toLowerCase();
+    var list = customersAgg().filter(function (c) { return !q || (c.name + " " + c.phone + " " + c.email).toLowerCase().indexOf(q) >= 0; });
+    $("custEmpty").hidden = list.length > 0;
+    $("custRows").innerHTML = list.map(function (c) {
+      return "<tr><td><b>" + esc(c.name) + "</b></td><td>" + esc(c.phone) + "</td><td>" + esc(c.email) + "</td><td>" + esc(c.address) + "</td><td>" + c.count + "</td><td><b>" + fmt(c.spent) + "</b></td><td>" + dateFmt(c.last) + "</td></tr>";
+    }).join("");
+  }
+  function renderProducts() {
+    var q = ($("prodSearch").value || "").toLowerCase();
+    var list = products.map(function (p, i) { return { p: p, i: i }; }).filter(function (x) {
+      return !q || (x.p.name + " " + (x.p.sku || "") + " " + (x.p.category || "")).toLowerCase().indexOf(q) >= 0;
+    });
+    $("prodEmpty").hidden = list.length > 0;
+    $("prodRows").innerHTML = list.map(function (x) {
+      var p = x.p;
+      return '<tr><td><img class="thumb" src="' + esc(p.image || "") + '" alt="" onerror="this.style.visibility=\'hidden\'"></td>'
+        + "<td><b>" + esc(p.name) + "</b></td><td>" + esc(p.sku || "") + "</td><td>" + esc(p.category || "") + "</td><td><b>" + fmt(p.price) + "</b></td><td>" + (p.sold || 0) + "</td>"
+        + '<td><button class="btn btn-ghost btn-sm" data-edit="' + x.i + '">Sửa</button> <button class="btn btn-danger btn-sm" data-del-prod="' + x.i + '">Xoá</button></td></tr>';
+    }).join("");
+    var cats = [...new Set(products.map(function (p) { return p.category; }).filter(Boolean))];
+    if (window.MSL_CATEGORIES) window.MSL_CATEGORIES.forEach(function (c) { if (cats.indexOf(c.name) < 0) cats.push(c.name); });
+    $("catList").innerHTML = cats.map(function (c) { return '<option value="' + esc(c) + '">'; }).join("");
+  }
+  function showOrderDetail(id) {
+    var o = orders.find(function (x) { return x.id === id; }); if (!o) return;
+    var c = o.customer || {};
+    $("orderDetail").innerHTML = '<div class="detail-box"><b>Đơn ' + esc(o.id) + '</b> — ' + dateFmt(o.createdAt)
+      + '<br>Khách: <b>' + esc(c.name) + '</b> • ' + esc(c.phone) + ' • ' + esc(c.email)
+      + '<br>Địa chỉ: ' + esc(c.address)
+      + '<ul>' + (o.items || []).map(function (i) { return "<li>" + esc(i.name) + (i.sku ? " (" + esc(i.sku) + ")" : "") + " — " + i.qty + " × " + fmt(i.price) + "</li>"; }).join("") + "</ul>"
+      + 'Tổng: <b>' + fmt(o.total) + '</b> • Trạng thái: ' + (STATUS[o.status] || STATUS.new)[0] + "</div>";
+    try { $("orderDetail").scrollIntoView({ behavior: "smooth", block: "nearest" }); } catch (e) {}
+  }
+
+  /* ============ Sự kiện ============ */
+  $("setupForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("suUser").value.trim(), p1 = $("suPass").value, p2 = $("suPass2").value;
+    if (p1 !== p2) { $("setupErr").textContent = "Mật khẩu nhập lại chưa khớp."; return; }
+    DB.setup(u, p1).then(function () { sessionStorage.setItem("msl_admin_user", u); toast("Đã tạo tài khoản quản trị"); showApp(); })
+      .catch(function (err) { $("setupErr").textContent = err.message || "Có lỗi xảy ra"; });
+  });
+  $("loginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    DB.login($("liUser").value.trim(), $("liPass").value).then(function () { toast("Đăng nhập thành công"); showApp(); })
+      .catch(function (err) { $("loginErr").textContent = err.message || "Đăng nhập thất bại"; });
+  });
+  $("logoutBtn").addEventListener("click", function () { DB.logout(); showAuth(); });
+  document.querySelectorAll(".tab").forEach(function (t) {
+    t.addEventListener("click", function () {
+      document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("active"); });
+      t.classList.add("active");
+      ["orders", "customers", "products", "accounts"].forEach(function (k) { $("tab-" + k).hidden = k !== t.dataset.tab; });
+    });
+  });
+  $("orderSearch").addEventListener("input", renderOrders);
+  $("orderFilter").addEventListener("change", renderOrders);
+  $("custSearch").addEventListener("input", renderCustomers);
+  $("prodSearch").addEventListener("input", renderProducts);
+  document.addEventListener("change", function (e) {
+    var s = e.target.closest("[data-status]");
+    if (s) { DB.updateOrder(s.dataset.status, s.value).then(function () { toast("Đã cập nhật trạng thái đơn " + s.dataset.status); refresh(); }); }
+  });
+  document.addEventListener("click", function (e) {
+    var v = e.target.closest("[data-view]"); if (v) { showOrderDetail(v.dataset.view); return; }
+    var d = e.target.closest("[data-del-order]");
+    if (d) { if (confirm("Xoá đơn " + d.dataset.delOrder + "?")) DB.deleteOrder(d.dataset.delOrder).then(function () { toast("Đã xoá đơn"); refresh(); }); return; }
+    var ep = e.target.closest("[data-edit]"); if (ep) { fillProductForm(+ep.dataset.edit); return; }
+    var dp = e.target.closest("[data-del-prod]");
+    if (dp) { var i = +dp.dataset.delProd; if (confirm("Xoá sản phẩm \"" + products[i].name + "\"?")) { products.splice(i, 1); DB.saveProducts(products).then(function () { toast("Đã xoá sản phẩm"); refresh(); }); } }
+  });
+  $("addProductBtn").addEventListener("click", function () { fillProductForm(-1); });
+  $("pfCancel").addEventListener("click", function () { $("productForm").hidden = true; });
+  function fillProductForm(i) {
+    $("productForm").hidden = false;
+    $("pfIndex").value = i;
+    $("pfTitle").textContent = i < 0 ? "Thêm sản phẩm" : "Sửa sản phẩm";
+    var p = i < 0 ? {} : products[i];
+    $("pfName").value = p.name || ""; $("pfSku").value = p.sku || ""; $("pfPrice").value = p.price || "";
+    $("pfCategory").value = p.category || ""; $("pfSold").value = p.sold || 0; $("pfImage").value = p.image || "";
+    $("pfFactory").value = p.factory || ""; $("pfImages").value = (p.images || []).join("\n"); $("pfDesc").value = (p.desc || []).join("\n");
+    if ($("pfUpload")) $("pfUpload").value = ""; setPreview();
+    try { $("productForm").scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {}
+  }
+  $("productForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var i = +$("pfIndex").value;
+    var images = $("pfImages").value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
+    var main = $("pfImage").value.trim();
+    var p = {
+      sku: $("pfSku").value.trim(), name: $("pfName").value.trim(), price: Number($("pfPrice").value || 0),
+      oldPrice: null, category: $("pfCategory").value.trim() || "Các loại mặt hàng khác",
+      sold: Number($("pfSold").value || 0), image: main, images: images.length ? images : (main ? [main] : []),
+      desc: $("pfDesc").value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean),
+      factory: $("pfFactory").value.trim()
+    };
+    if (i < 0) products.unshift(p); else products[i] = Object.assign({}, products[i], p);
+    DB.saveProducts(products).then(function () { $("productForm").hidden = true; toast("Đã lưu sản phẩm — website sẽ hiển thị theo dữ liệu mới"); refresh(); });
+  });
+  $("addAdminForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("naUser").value.trim(), p1 = $("naPass").value, p2 = $("naPass2").value;
+    if (p1 !== p2) { $("naErr").textContent = "Mật khẩu nhập lại chưa khớp."; return; }
+    DB.createAdmin(u, p1).then(function () { $("naErr").textContent = ""; e.target.reset(); toast("Đã tạo thêm tài khoản: " + u); renderAccounts(); })
+      .catch(function (err) { $("naErr").textContent = err.message || "Có lỗi xảy ra"; });
+  });
+  function compressImage(dataUrl) {
+    return new Promise(function (resolve) {
+      var done = false; function fin(v) { if (!done) { done = true; resolve(v); } }
+      try {
+        var img = new Image();
+        img.onload = function () { try {
+          var w = img.naturalWidth || img.width, hh = img.naturalHeight || img.height;
+          if (!w || !hh) return fin(dataUrl);
+          var scale = Math.min(1, 1000 / Math.max(w, hh));
+          if (scale === 1 && dataUrl.length < 1500000) return fin(dataUrl);
+          var cv = document.createElement("canvas");
+          cv.width = Math.round(w * scale); cv.height = Math.round(hh * scale);
+          cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+          fin(cv.toDataURL("image/jpeg", 0.85));
+        } catch (e) { fin(dataUrl); } };
+        img.onerror = function () { fin(dataUrl); };
+        setTimeout(function () { fin(dataUrl); }, 1500);
+        img.src = dataUrl;
+      } catch (e) { fin(dataUrl); }
+    });
+  }
+  function setPreview() { var v = $("pfImage").value.trim(); var im = $("pfPreview"); if (v) { im.src = v; im.hidden = false; } else { im.hidden = true; } }
+  $("pfImage").addEventListener("input", setPreview);
+  $("pfUpload").addEventListener("change", function () {
+    var f = $("pfUpload").files && $("pfUpload").files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () { compressImage(String(rd.result)).then(function (out) { $("pfImage").value = out; setPreview(); toast("Đã tải ảnh lên"); }); };
+    rd.readAsDataURL(f);
+  });
+  $("exportOrders").addEventListener("click", function () {
+    var rows = [["Ma don", "Thoi gian", "Khach", "SDT", "Email", "Dia chi", "Tong", "Trang thai"]];
+    orders.forEach(function (o) { var c = o.customer || {}; rows.push([o.id, dateFmt(o.createdAt), c.name, c.phone, c.email, c.address, o.total, (STATUS[o.status] || [])[0] || o.status]); });
+    var csv = rows.map(function (r) { return r.map(function (x) { return '"' + String(x == null ? "" : x).replace(/"/g, '""') + '"'; }).join(","); }).join("\n");
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv" }));
+    a.download = "don-hang-min-smart-life.csv"; a.click(); URL.revokeObjectURL(a.href);
+  });
+
+  DB.detect().then(function () { if (DB.loggedIn()) showApp(); else showAuth(); });
+})();
+</script>
+</body>
+</html>
