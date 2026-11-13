@@ -1,2 +1,0 @@
-# MinSmartlife
-MinSmartLife website
