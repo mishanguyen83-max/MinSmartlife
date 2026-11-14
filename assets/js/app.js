@@ -163,6 +163,8 @@
     byId("footStep1").hidden = n !== 1;
     byId("footStep2").hidden = n !== 2;
     byId("cartItems").hidden = n !== 1;
+    byId("orderSuccess").hidden = n !== 3;
+    byId("drawerFoot").hidden = n === 3;
     if (n === 2) { var f = byId("coName"); if (f) { try { f.focus({ preventScroll: true }); } catch (e) {} } }
   }
   function openCart() { goStep(1); byId("cartDrawer").classList.add("open"); byId("cartDrawer").setAttribute("aria-hidden", "false"); var b = byId("drawerBackdrop"); b.hidden = false; b.classList.add("open"); b.style.display = ""; }
@@ -281,11 +283,10 @@
       + "Họ và tên: " + data.name + "\nSố điện thoại: " + data.phone + "\nEmail: " + data.email + "\nĐịa chỉ giao hàng: " + data.address + "\n"
       + list.map(function (x, i) { return (i + 1) + ". " + x.p.name + " — SL: " + x.qty + " — " + fmt(x.p.price * x.qty); }).join("\n")
       + "\nTạm tính: " + fmt(order.total);
-    var fbBtn = byId("fbOrderBtn");
-    fbBtn.href = MME_URL + "?text=" + encodeURIComponent(text);
-    fbBtn.hidden = false;
+    byId("contactBtn").href = MME_URL + "?text=" + encodeURIComponent(text);
     cart = {}; saveCart(); renderCart();
-    status.innerHTML = "Đặt hàng thành công! Mã đơn của bạn là <b>" + order.id + "</b>. Shop đã nhận được thông tin trong hệ thống quản trị và sẽ liên hệ xác nhận sớm nhất.";
+    byId("orderSuccessMsg").innerHTML = "Đặt hàng thành công! Mã đơn của bạn là <b>" + order.id + "</b>. Shop đã nhận được thông tin trong hệ thống quản trị và sẽ liên hệ xác nhận sớm nhất.";
+    goStep(3);
   });
 
   /* ---------- Dữ liệu CMS: đơn hàng + sản phẩm quản trị từ admin.html / Cloudflare ---------- */

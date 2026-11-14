@@ -304,8 +304,14 @@
         <span class="err">Vui lòng nhập địa chỉ giao hàng.</span>
       </div>
     </form>
+    <div class="order-success" id="orderSuccess" hidden>
+      <div class="os-icon" aria-hidden="true">✓</div>
+      <p class="os-msg" id="orderSuccessMsg" role="status"></p>
+      <a class="btn btn-primary" id="contactBtn" href="https://m.me/61596530125836" target="_blank" rel="noopener">Liên hệ</a>
+      <p class="drawer-note">Bạn có thể đóng cửa sổ này bằng nút ✕ ở góc trên bên phải để quay lại website.</p>
+    </div>
   </div>
-  <div class="drawer-foot">
+  <div class="drawer-foot" id="drawerFoot">
     <div class="drawer-total"><span>Tạm tính</span><strong id="cartTotal">0₫</strong></div>
     <div id="footStep1">
       <button class="btn btn-primary btn-block" id="toCheckoutBtn">Đặt hàng</button>
@@ -313,7 +319,6 @@
     </div>
     <div id="footStep2" hidden>
       <button class="btn btn-primary btn-block" id="orderBtn">Xác nhận đặt hàng</button>
-      <a class="btn btn-ghost btn-block" id="fbOrderBtn" href="#" target="_blank" rel="noopener" hidden>Nhắn thêm qua Fanpage (tuỳ chọn)</a>
       <p class="order-status" id="orderStatus" role="status"></p>
       <button class="step-back" id="backToCartBtn" type="button">← Quay lại xem giỏ hàng</button>
       <p class="drawer-note">Thông tin đơn hàng được gửi thẳng về hệ thống quản trị của shop. Shop sẽ liên hệ xác nhận giá, phí ship và tồn kho trước khi giao hàng.</p>
