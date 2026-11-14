@@ -280,3 +280,10 @@ strong,b,h1,h2,h3,h4,th,summary{font-family:Arial,Helvetica,sans-serif}
 /* Nút quay lại CMS (chỉ hiện khi quản trị viên đi từ trang CMS sang website) */
 .cms-back{position:fixed;right:16px;bottom:16px;z-index:150;background:var(--primary-dark);color:#fff;font-weight:800;padding:12px 20px;border-radius:999px;box-shadow:0 12px 28px rgba(3,34,78,.35);text-decoration:none}
 .cms-back:hover{background:var(--primary);color:#fff}
+
+
+/* Giỏ hàng 2 bước + tồn kho */
+.step-back{background:none;border:0;color:var(--primary);font-weight:800;cursor:pointer;padding:8px 4px;display:block;margin:2px auto 0}
+.step-back:hover{text-decoration:underline}
+.stock-note{display:inline-block;margin-top:6px;font-size:.8rem;font-weight:800;color:#B45309}
+.stock-note.out{color:#DC2626}

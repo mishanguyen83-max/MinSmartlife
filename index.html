@@ -281,7 +281,7 @@
   <div class="drawer-head"><h3>Giỏ hàng của bạn</h3><button id="cartClose" aria-label="Đóng giỏ hàng">✕</button></div>
   <div class="drawer-main">
     <div class="drawer-items" id="cartItems"></div>
-    <form class="checkout-form" id="checkoutForm" novalidate>
+    <form class="checkout-form" id="checkoutForm" novalidate hidden>
       <h4>Thông tin giao hàng</h4>
       <div class="field" id="f-name">
         <label for="coName">Họ và tên: <i>*</i></label>
@@ -307,10 +307,17 @@
   </div>
   <div class="drawer-foot">
     <div class="drawer-total"><span>Tạm tính</span><strong id="cartTotal">0₫</strong></div>
-    <button class="btn btn-primary btn-block" id="orderBtn">Đặt hàng</button>
-    <a class="btn btn-ghost btn-block" id="fbOrderBtn" href="#" target="_blank" rel="noopener" hidden>Nhắn thêm qua Fanpage (tuỳ chọn)</a>
-    <p class="order-status" id="orderStatus" role="status"></p>
-    <p class="drawer-note">Thông tin đơn hàng được gửi thẳng về hệ thống quản trị của shop. Shop sẽ liên hệ xác nhận giá, phí ship và tồn kho trước khi giao hàng.</p>
+    <div id="footStep1">
+      <button class="btn btn-primary btn-block" id="toCheckoutBtn">Đặt hàng</button>
+      <p class="drawer-note">Kiểm tra lại các sản phẩm trong giỏ, sau đó bấm Đặt hàng để điền thông tin giao hàng.</p>
+    </div>
+    <div id="footStep2" hidden>
+      <button class="btn btn-primary btn-block" id="orderBtn">Xác nhận đặt hàng</button>
+      <a class="btn btn-ghost btn-block" id="fbOrderBtn" href="#" target="_blank" rel="noopener" hidden>Nhắn thêm qua Fanpage (tuỳ chọn)</a>
+      <p class="order-status" id="orderStatus" role="status"></p>
+      <button class="step-back" id="backToCartBtn" type="button">← Quay lại xem giỏ hàng</button>
+      <p class="drawer-note">Thông tin đơn hàng được gửi thẳng về hệ thống quản trị của shop. Shop sẽ liên hệ xác nhận giá, phí ship và tồn kho trước khi giao hàng.</p>
+    </div>
   </div>
 </aside>
 

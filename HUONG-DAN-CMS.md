@@ -13,6 +13,7 @@ Trang quản trị: **`/admin.html`** trên cùng website (ví dụ `https://min
 - **Đơn hàng:** xem mọi đơn khách đặt trên website (mã đơn, thời gian, khách, sản phẩm, tổng tiền). Đổi trạng thái ngay trên bảng: *Mới → Đã liên hệ → Đã xác nhận → Đang giao → Hoàn thành / Đã huỷ*. Có tìm kiếm, lọc theo trạng thái, xem chi tiết và **xuất CSV**.
 - **Khách hàng:** tự tổng hợp từ đơn hàng theo số điện thoại — số đơn, tổng chi tiêu, đơn gần nhất.
 - **Sản phẩm:** thêm sản phẩm mới, sửa thông tin (tên, SKU, giá, danh mục, ảnh, mô tả, đã bán), xoá sản phẩm. Ảnh sản phẩm chính có thể **dán URL hoặc tải lên từ máy** (ảnh tải lên tự nén tối đa 1000px). Website bán hàng tự hiển thị theo dữ liệu mới nhất.
+- **Tồn kho:** mỗi sản phẩm có ô *Số lượng tồn kho* (để trống = không quản lý tồn). Khách đặt hàng → tồn tự trừ; huỷ đơn → tồn tự cộng lại; xoá đơn chưa huỷ → tồn được hoàn. Sản phẩm có tồn = 0 sẽ tự ẩn khỏi website. Lần đầu đăng nhập CMS ở chế độ máy chủ, hệ thống tự đồng bộ danh mục lên máy chủ để tính năng tồn kho hoạt động.
 - **Tài khoản:** tab *Tài khoản* trong CMS cho phép **tạo thêm nhiều tài khoản quản trị viên** và xem danh sách tài khoản hiện có.
 - Nút **"Xem website"** trong CMS mở website kèm dấu hiệu quản trị: trên website sẽ hiện nút nổi **"⚙ Quay lại trang CMS"** ở góc dưới phải để quay về CMS chỉ với 1 chạm. Khách hàng bình thường không nhìn thấy nút này.
 

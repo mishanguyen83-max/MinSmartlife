@@ -182,6 +182,7 @@ tr:hover td{background:#F7FAFF}
         <div><label for="pfPrice">Giá (VNĐ) *</label><input id="pfPrice" type="number" min="0" step="1000" required></div>
         <div><label for="pfCategory">Danh mục</label><input id="pfCategory" list="catList" placeholder="Chọn hoặc gõ danh mục"><datalist id="catList"></datalist></div>
         <div><label for="pfSold">Đã bán</label><input id="pfSold" type="number" min="0" value="0"></div>
+        <div><label for="pfStock">Số lượng tồn kho</label><input id="pfStock" type="number" min="0" placeholder="Để trống = không quản lý tồn"><span style="font-size:.8rem;color:var(--muted)">Đặt đơn sẽ tự trừ, huỷ đơn tự cộng lại. Tồn = 0 thì sản phẩm tự ẩn khỏi website.</span></div>
         <div class="full"><label for="pfImage">Ảnh sản phẩm chính — dán URL hoặc tải ảnh từ máy lên</label>
         <input id="pfImage" placeholder="https://...">
         <div style="display:flex;gap:12px;align-items:center;margin-top:9px;flex-wrap:wrap">
@@ -199,7 +200,7 @@ tr:hover td{background:#F7FAFF}
       </div>
     </form>
     <div style="overflow-x:auto"><table>
-      <thead><tr><th>Ảnh</th><th>Sản phẩm</th><th>SKU</th><th>Danh mục</th><th>Giá</th><th>Đã bán</th><th></th></tr></thead>
+      <thead><tr><th>Ảnh</th><th>Sản phẩm</th><th>SKU</th><th>Danh mục</th><th>Giá</th><th>Đã bán</th><th>Tồn kho</th><th></th></tr></thead>
       <tbody id="prodRows"></tbody>
     </table></div>
     <p class="empty" id="prodEmpty" hidden>Chưa có sản phẩm nào.</p>
@@ -215,6 +216,7 @@ tr:hover td{background:#F7FAFF}
   /* ============ Tầng dữ liệu: ưu tiên Cloudflare API (KV), không có thì dùng localStorage ============ */
   var MODE = "local";
   var token = sessionStorage.getItem("msl_admin_token") || "";
+  var serverHasProducts = false;
   var LS = {
     get: function (k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } },
     set: function (k, v) { localStorage.setItem(k, JSON.stringify(v)); }
@@ -233,6 +235,14 @@ tr:hover td{background:#F7FAFF}
     }
     var h = 0; for (var i = 0; i < text.length; i++) { h = (h * 31 + text.charCodeAt(i)) >>> 0; }
     return Promise.resolve("fnv" + h.toString(16));
+  }
+  function adjustStockInMemory(items, dir) {
+    if (!products || !products.length) return;
+    (items || []).forEach(function (it) {
+      var p = products.find(function (x) { return (it.sku && x.sku && x.sku === it.sku) || x.name === it.name; });
+      if (p && typeof p.stock === "number") p.stock = Math.max(0, p.stock + dir * Number(it.qty || 0));
+    });
+    LS.set("msl_products", products);
   }
   var DB = {
     detect: function () {
@@ -283,16 +293,25 @@ tr:hover td{background:#F7FAFF}
     },
     updateOrder: function (id, status) {
       if (MODE === "server") return api("/api/orders", { method: "POST", body: JSON.stringify({ action: "update", id: id, status: status }) });
-      var arr = LS.get("msl_orders", []); arr.forEach(function (o) { if (o.id === id) o.status = status; }); LS.set("msl_orders", arr);
+      var arr = LS.get("msl_orders", []);
+      var o = arr.find(function (x) { return x.id === id; });
+      if (o && o.status !== status) {
+        if (o.status !== "cancelled" && status === "cancelled") adjustStockInMemory(o.items, +1);
+        else if (o.status === "cancelled" && status !== "cancelled") adjustStockInMemory(o.items, -1);
+        o.status = status; LS.set("msl_orders", arr);
+      }
       return Promise.resolve();
     },
     deleteOrder: function (id) {
       if (MODE === "server") return api("/api/orders", { method: "POST", body: JSON.stringify({ action: "delete", id: id }) });
-      LS.set("msl_orders", LS.get("msl_orders", []).filter(function (o) { return o.id !== id; }));
+      var arr = LS.get("msl_orders", []);
+      var o = arr.find(function (x) { return x.id === id; });
+      if (o && o.status !== "cancelled") adjustStockInMemory(o.items, +1);
+      LS.set("msl_orders", arr.filter(function (x) { return x.id !== id; }));
       return Promise.resolve();
     },
     products: function () {
-      if (MODE === "server") return api("/api/products").then(function (r) { return (r.data.products && r.data.products.length) ? r.data.products : (window.MSL_PRODUCTS || []); });
+      if (MODE === "server") return api("/api/products").then(function (r) { serverHasProducts = !!(r.data.products && r.data.products.length); return serverHasProducts ? r.data.products : (window.MSL_PRODUCTS || []); });
       var saved = LS.get("msl_products", null);
       return Promise.resolve(saved && saved.length ? saved : (window.MSL_PRODUCTS || []));
     },
@@ -329,6 +348,10 @@ tr:hover td{background:#F7FAFF}
   function refresh() {
     Promise.all([DB.orders(), DB.products()]).then(function (res) {
       orders = res[0]; products = res[1];
+      if (MODE === "server" && !serverHasProducts && products.length) {
+        serverHasProducts = true;
+        DB.saveProducts(products).then(function () { toast("Đã đồng bộ danh mục lên máy chủ — tồn kho sẽ tự cập nhật theo đơn hàng"); });
+      }
       renderStats(); renderOrders(); renderCustomers(); renderProducts(); renderAccounts();
     });
   }
@@ -393,6 +416,7 @@ tr:hover td{background:#F7FAFF}
       var p = x.p;
       return '<tr><td><img class="thumb" src="' + esc(p.image || "") + '" alt="" onerror="this.style.visibility=\'hidden\'"></td>'
         + "<td><b>" + esc(p.name) + "</b></td><td>" + esc(p.sku || "") + "</td><td>" + esc(p.category || "") + "</td><td><b>" + fmt(p.price) + "</b></td><td>" + (p.sold || 0) + "</td>"
+        + "<td>" + (typeof p.stock === "number" ? (p.stock === 0 ? '<b style="color:var(--danger)">0 (ẩn web)</b>' : "<b>" + p.stock + "</b>") : '<span style="color:var(--muted)">—</span>') + "</td>"
         + '<td><button class="btn btn-ghost btn-sm" data-edit="' + x.i + '">Sửa</button> <button class="btn btn-danger btn-sm" data-del-prod="' + x.i + '">Xoá</button></td></tr>';
     }).join("");
     var cats = [...new Set(products.map(function (p) { return p.category; }).filter(Boolean))];
@@ -455,7 +479,7 @@ tr:hover td{background:#F7FAFF}
     $("pfTitle").textContent = i < 0 ? "Thêm sản phẩm" : "Sửa sản phẩm";
     var p = i < 0 ? {} : products[i];
     $("pfName").value = p.name || ""; $("pfSku").value = p.sku || ""; $("pfPrice").value = p.price || "";
-    $("pfCategory").value = p.category || ""; $("pfSold").value = p.sold || 0; $("pfImage").value = p.image || "";
+    $("pfCategory").value = p.category || ""; $("pfSold").value = p.sold || 0; $("pfStock").value = (typeof p.stock === "number") ? p.stock : ""; $("pfImage").value = p.image || "";
     $("pfFactory").value = p.factory || ""; $("pfImages").value = (p.images || []).join("\n"); $("pfDesc").value = (p.desc || []).join("\n");
     if ($("pfUpload")) $("pfUpload").value = ""; setPreview();
     try { $("productForm").scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {}
@@ -468,7 +492,9 @@ tr:hover td{background:#F7FAFF}
     var p = {
       sku: $("pfSku").value.trim(), name: $("pfName").value.trim(), price: Number($("pfPrice").value || 0),
       oldPrice: null, category: $("pfCategory").value.trim() || "Các loại mặt hàng khác",
-      sold: Number($("pfSold").value || 0), image: main, images: images.length ? images : (main ? [main] : []),
+      sold: Number($("pfSold").value || 0),
+      stock: $("pfStock").value === "" ? null : Math.max(0, Number($("pfStock").value || 0)),
+      image: main, images: images.length ? images : (main ? [main] : []),
       desc: $("pfDesc").value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean),
       factory: $("pfFactory").value.trim()
     };

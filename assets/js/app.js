@@ -18,6 +18,8 @@
     });
   }
   function byId(id) { return document.getElementById(id); }
+  function stockOf(p) { return (p && typeof p.stock === "number") ? p.stock : null; }
+  function isOut(p) { var s = stockOf(p); return s !== null && s <= 0; }
 
   /* ---------- Product card ---------- */
   function cardHTML(p, idx) {
@@ -28,6 +30,7 @@
       '<div class="p-body"><span class="p-cat">' + esc(p.category) + '</span>' +
       '<h3 class="p-name">' + esc(p.name) + '</h3>' +
       (p.sku ? '<span class="p-sku">Mã: ' + esc(p.sku) + (p.factory ? " • " + esc(p.factory) : "") + '</span>' : "") +
+      (stockOf(p) !== null && stockOf(p) > 0 && stockOf(p) <= 5 ? '<span class="stock-note">Chỉ còn ' + stockOf(p) + ' sản phẩm</span>' : "") +
       '<div class="p-price">' + fmt(p.price) + '<small>Giá đã gồm VAT — shop xác nhận trước khi giao</small></div>' +
       '<div class="p-actions"><button class="btn btn-primary" data-add="' + idx + '">Thêm vào giỏ</button>' +
       '<button class="btn btn-detail" data-detail="' + idx + '" aria-label="Xem chi tiết">Chi tiết</button></div>' +
@@ -85,7 +88,7 @@
     if (scroll) document.getElementById("san-pham").scrollIntoView({ behavior: "smooth" });
   }
   function filtered() {
-    var list = products.slice();
+    var list = products.filter(function (p) { return !isOut(p); });
     if (state.cat !== "all") list = list.filter(function (p) { return p.category === state.cat; });
     if (state.q) {
       var q = state.q.toLowerCase();
@@ -108,9 +111,9 @@
 
   /* ---------- Sections ---------- */
   function renderSections() {
-    var best = products.slice().sort(function (a, b) { return (b.sold || 0) - (a.sold || 0); }).slice(0, 8);
+    var best = products.filter(function (p) { return !isOut(p); }).sort(function (a, b) { return (b.sold || 0) - (a.sold || 0); }).slice(0, 8);
     renderGrid(byId("bestGrid"), best);
-    var smart = products.filter(function (p) { return SMART_CATS.indexOf(p.category) >= 0; })
+    var smart = products.filter(function (p) { return !isOut(p) && SMART_CATS.indexOf(p.category) >= 0; })
       .sort(function (a, b) { return (b.sold || 0) - (a.sold || 0); }).slice(0, 8);
     renderGrid(byId("smartGrid"), smart);
   }
@@ -144,15 +147,24 @@
       }).join("");
     }
     byId("cartTotal").textContent = fmt(cartTotal());
-    box.querySelectorAll("[data-inc]").forEach(function (b) { b.addEventListener("click", function () { cart[b.dataset.inc]++; saveCart(); renderCart(); }); });
+    box.querySelectorAll("[data-inc]").forEach(function (b) { b.addEventListener("click", function () { var pr = products[+b.dataset.inc]; var st = pr ? stockOf(pr) : null; if (st !== null && (cart[b.dataset.inc] || 0) >= st) { alert("Sản phẩm này chỉ còn " + st + " sản phẩm trong kho."); return; } cart[b.dataset.inc]++; saveCart(); renderCart(); }); });
     box.querySelectorAll("[data-dec]").forEach(function (b) { b.addEventListener("click", function () { var k = b.dataset.dec; cart[k]--; if (cart[k] <= 0) delete cart[k]; saveCart(); renderCart(); }); });
     box.querySelectorAll("[data-remove]").forEach(function (b) { b.addEventListener("click", function () { delete cart[b.dataset.remove]; saveCart(); renderCart(); }); });
   }
   function addToCart(idx, openDrawer) {
+    var p = products[idx]; var s = p ? stockOf(p) : null;
+    if (s !== null && (cart[idx] || 0) >= s) { alert(s <= 0 ? "Sản phẩm này đã hết hàng." : "Sản phẩm này chỉ còn " + s + " sản phẩm trong kho."); return; }
     cart[idx] = (cart[idx] || 0) + 1; saveCart(); renderCart();
     if (openDrawer) openCart(); else { var cb = byId("cartBtn"); if (cb.animate) { try { cb.animate([{ transform: "scale(1)" }, { transform: "scale(1.18)" }, { transform: "scale(1)" }], { duration: 260 }); } catch (e) {} } }
   }
-  function openCart() { byId("cartDrawer").classList.add("open"); byId("cartDrawer").setAttribute("aria-hidden", "false"); var b = byId("drawerBackdrop"); b.hidden = false; b.classList.add("open"); b.style.display = ""; }
+  function goStep(n) {
+    byId("checkoutForm").hidden = n !== 2;
+    byId("footStep1").hidden = n !== 1;
+    byId("footStep2").hidden = n !== 2;
+    byId("cartItems").hidden = n !== 1;
+    if (n === 2) { var f = byId("coName"); if (f) { try { f.focus({ preventScroll: true }); } catch (e) {} } }
+  }
+  function openCart() { goStep(1); byId("cartDrawer").classList.add("open"); byId("cartDrawer").setAttribute("aria-hidden", "false"); var b = byId("drawerBackdrop"); b.hidden = false; b.classList.add("open"); b.style.display = ""; }
   function closeCart() { byId("cartDrawer").classList.remove("open"); byId("cartDrawer").setAttribute("aria-hidden", "true"); var b = byId("drawerBackdrop"); b.hidden = true; b.classList.remove("open"); b.style.display = "none"; }
 
   /* ---------- Modal ---------- */
@@ -199,6 +211,8 @@
   byId("searchInput").addEventListener("input", function (e) { state.q = e.target.value.trim(); renderProducts(); });
   byId("sortSelect").addEventListener("change", function (e) { state.sort = e.target.value; renderProducts(); });
   byId("cartBtn").addEventListener("click", openCart);
+  byId("toCheckoutBtn").addEventListener("click", function () { if (cartList().length) goStep(2); });
+  byId("backToCartBtn").addEventListener("click", function () { goStep(1); });
   byId("cartClose").addEventListener("click", closeCart);
   byId("drawerBackdrop").addEventListener("click", closeCart);
   byId("modalClose").addEventListener("click", closeModal);
@@ -280,8 +294,19 @@
       arr.unshift(order);
       localStorage.setItem("msl_orders", JSON.stringify(arr.slice(0, 500)));
     } catch (e) {}
+    // Trừ tồn kho local (khi CMS dùng chế độ nội bộ trên cùng thiết bị)
+    try {
+      var lp = JSON.parse(localStorage.getItem("msl_products") || "null");
+      if (lp && lp.length) {
+        order.items.forEach(function (it) {
+          var pr = lp.find(function (x) { return (it.sku && x.sku && x.sku === it.sku) || x.name === it.name; });
+          if (pr && typeof pr.stock === "number") pr.stock = Math.max(0, pr.stock - it.qty);
+        });
+        localStorage.setItem("msl_products", JSON.stringify(lp));
+      }
+    } catch (e) {}
     if (/^https?:$/.test(window.location.protocol)) {
-      try { fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(order) }).catch(function () {}); } catch (e) {}
+      try { fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.assign({ action: "create" }, order)) }).catch(function () {}); } catch (e) {}
     }
   }
   function applyProducts(newList) {
