@@ -121,6 +121,7 @@ tr:hover td{background:#F7FAFF}
     <button class="tab" data-tab="customers">Khách hàng</button>
     <button class="tab" data-tab="products">Sản phẩm</button>
     <button class="tab" data-tab="accounts">Tài khoản</button>
+    <button class="tab" data-tab="home">Trang chủ (Hero)</button>
   </div>
 
   <!-- Orders -->
@@ -168,6 +169,31 @@ tr:hover td{background:#F7FAFF}
   </div>
 
   <!-- Products -->
+  <div class="card panel" id="tab-home" hidden>
+    <div class="toolbar"><h3 style="margin:0">Thông điệp & ảnh Hero (đầu trang chủ)</h3></div>
+    <p style="color:var(--muted);margin:4px 0 14px">Sửa các nội dung dưới đây rồi bấm <b>Lưu nội dung trang chủ</b> — website cập nhật ngay cho mọi khách (để trống ô nào thì giữ nguyên nội dung mặc định của ô đó).</p>
+    <div class="form-grid">
+      <div class="full"><label for="stBadge">Dòng nhãn nhỏ phía trên (badge)</label><input id="stBadge" placeholder="GIA DỤNG SỐ & THIẾT BỊ THÔNG MINH"></div>
+      <div><label for="stLine1">Tiêu đề — dòng 1</label><input id="stLine1" placeholder="Nhà thông minh hơn,"></div>
+      <div><label for="stPre">Dòng 2 — chữ trước phần màu cam</label><input id="stPre" placeholder="bếp "></div>
+      <div><label for="stHl">Dòng 2 — chữ màu cam (nổi bật)</label><input id="stHl" placeholder="xịn"></div>
+      <div><label for="stPost">Dòng 2 — chữ sau phần màu cam</label><input id="stPost" placeholder=" hơn mỗi ngày"></div>
+      <div class="full"><label for="stSub">Đoạn mô tả dưới tiêu đề</label><textarea id="stSub" rows="3" placeholder="Min Smart Life chuyên gia dụng điện tử và smarthome chính hãng..."></textarea></div>
+      <div class="full"><label for="stHeroImg">Ảnh Hero / banner campaign — dán URL hoặc tải ảnh từ máy lên</label>
+      <input id="stHeroImg" placeholder="https://...">
+      <span style="font-size:.82rem;color:var(--muted)">📐 Kích thước chuẩn: ảnh hiển thị tỉ lệ <b>4:3</b> — khuyến nghị <b>1200×900 px</b> (tối thiểu 1000×750 px). Ảnh lệch tỉ lệ sẽ tự cắt (cover) cho vừa khung. Dùng ảnh ngang, rõ nét cho campaign sale.</span>
+      <div style="display:flex;gap:12px;align-items:center;margin-top:9px;flex-wrap:wrap">
+        <input type="file" id="stUpload" accept="image/*" style="width:auto;border:0;padding:0">
+        <img id="stPreview" class="thumb" alt="" hidden style="width:120px;height:90px;object-fit:cover">
+        <span id="stDims" style="font-size:.82rem;color:var(--muted)"></span>
+      </div></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-blue" type="button" id="btnSaveSettings">Lưu nội dung trang chủ</button>
+      <span id="settingsStatus" style="font-size:.85rem;color:var(--muted)"></span>
+    </div>
+  </div>
+
   <div class="card panel" id="tab-products" hidden>
     <div class="toolbar">
       <input id="prodSearch" type="search" placeholder="Tìm sản phẩm theo tên, mã SKU, danh mục...">
@@ -185,13 +211,14 @@ tr:hover td{background:#F7FAFF}
         <div><label for="pfStock">Số lượng tồn kho</label><input id="pfStock" type="number" min="0" placeholder="Để trống = không quản lý tồn"><span style="font-size:.8rem;color:var(--muted)">Đặt đơn sẽ tự trừ, huỷ đơn tự cộng lại. Tồn = 0 thì sản phẩm tự ẩn khỏi website.</span></div>
         <div class="full"><label for="pfImage">Ảnh sản phẩm chính — dán URL hoặc tải ảnh từ máy lên</label>
         <input id="pfImage" placeholder="https://...">
+        <span style="font-size:.82rem;color:var(--muted)">📐 Kích thước chuẩn: ảnh sản phẩm hiển thị <b>vuông 1:1</b> — khuyến nghị <b>1000×1000 px</b> (tối thiểu 800×800 px). Tất cả ảnh sản phẩm nên <b>cùng một kích thước</b> để giao diện đồng nhất; ảnh lệch tỉ lệ sẽ tự cắt khi hiển thị.</span>
         <div style="display:flex;gap:12px;align-items:center;margin-top:9px;flex-wrap:wrap">
           <input type="file" id="pfUpload" accept="image/*" style="width:auto;border:0;padding:0">
           <img id="pfPreview" class="thumb" alt="" hidden>
-          <span style="font-size:.82rem;color:var(--muted)">Ảnh tải lên tự nén tối đa 1000px cho nhẹ; hoặc dán URL ảnh có sẵn.</span>
+          <span id="pfDims" style="font-size:.82rem;color:var(--muted)">Ảnh tải lên tự nén tối đa 1000px cho nhẹ; hoặc dán URL ảnh có sẵn.</span>
         </div></div>
         <div><label for="pfFactory">Xuất xứ</label><input id="pfFactory" placeholder="Ví dụ: Made in Germany"></div>
-        <div><label for="pfImages">Link ảnh phụ (mỗi link 1 dòng)</label><textarea id="pfImages" rows="2"></textarea></div>
+        <div><label for="pfImages">Link ảnh phụ (mỗi link 1 dòng)</label><textarea id="pfImages" rows="2"></textarea><span style="font-size:.82rem;color:var(--muted)">📐 Ảnh phụ cũng nên là ảnh vuông <b>1000×1000 px</b>, cùng kích thước với ảnh chính.</span></div>
         <div class="full"><label for="pfDesc">Mô tả / điểm nổi bật (mỗi ý 1 dòng)</label><textarea id="pfDesc" rows="4"></textarea></div>
       </div>
       <div class="form-actions">
@@ -315,6 +342,15 @@ tr:hover td{background:#F7FAFF}
       var saved = LS.get("msl_products", null);
       return Promise.resolve(saved && saved.length ? saved : (window.MSL_PRODUCTS || []));
     },
+    settings: function () {
+      if (MODE === "server") return api("/api/settings").then(function (r) { return r.data.settings || LS.get("msl_settings", null); });
+      return Promise.resolve(LS.get("msl_settings", null));
+    },
+    saveSettings: function (s) {
+      LS.set("msl_settings", s);
+      if (MODE === "server") return api("/api/settings", { method: "POST", body: JSON.stringify({ settings: s }) });
+      return Promise.resolve();
+    },
     saveProducts: function (list) {
       if (MODE === "server") return api("/api/products", { method: "POST", body: JSON.stringify({ products: list }) });
       LS.set("msl_products", list);
@@ -346,6 +382,7 @@ tr:hover td{background:#F7FAFF}
     refresh();
   }
   function refresh() {
+    DB.settings().then(fillSettingsForm).catch(function () {});
     Promise.all([DB.orders(), DB.products()]).then(function (res) {
       orders = res[0]; products = res[1];
       if (MODE === "server" && !serverHasProducts && products.length) {
@@ -434,6 +471,49 @@ tr:hover td{background:#F7FAFF}
     try { $("orderDetail").scrollIntoView({ behavior: "smooth", block: "nearest" }); } catch (e) {}
   }
 
+
+  // ===== Trang chủ (Hero): nội dung + ảnh =====
+  function probeDims(url, cb) {
+    if (!url) return;
+    var im = new Image();
+    im.onload = function () { cb(im.naturalWidth || im.width, im.naturalHeight || im.height); };
+    im.onerror = function () {};
+    im.src = url;
+  }
+  function fillSettingsForm(s) {
+    if (!s) return;
+    if (s.heroBadge) $("stBadge").value = s.heroBadge;
+    if (s.heroLine1) $("stLine1").value = s.heroLine1;
+    if (s.heroPre) $("stPre").value = s.heroPre;
+    if (s.heroHighlight) $("stHl").value = s.heroHighlight;
+    if (s.heroPost) $("stPost").value = s.heroPost;
+    if (s.heroSub) $("stSub").value = s.heroSub;
+    if (s.heroImage) { $("stHeroImg").value = s.heroImage; setHeroPreview(); }
+  }
+  function setHeroPreview() {
+    var v = $("stHeroImg").value.trim(); var im = $("stPreview");
+    if (v) { im.src = v; im.hidden = false; probeDims(v, function (w, hh) { $("stDims").textContent = "Ảnh hiện tại: " + w + "×" + hh + " px — chuẩn khuyến nghị 1200×900 px (4:3)" + (Math.abs(w / hh - 4 / 3) > 0.08 ? " — ⚠ tỉ lệ chưa đúng 4:3, ảnh sẽ bị cắt khi hiển thị" : " ✓ đúng tỉ lệ"); }); }
+    else { im.hidden = true; $("stDims").textContent = ""; }
+  }
+  $("stHeroImg").addEventListener("input", setHeroPreview);
+  $("stUpload").addEventListener("change", function () {
+    var f = this.files && this.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () { compressImage(String(rd.result), 1400).then(function (out) { $("stHeroImg").value = out; setHeroPreview(); toast("Đã tải ảnh Hero lên (đã nén tối đa 1400px)"); }); };
+    rd.readAsDataURL(f);
+  });
+  $("btnSaveSettings").addEventListener("click", function () {
+    var s = {};
+    var map = { heroBadge: "stBadge", heroLine1: "stLine1", heroPre: "stPre", heroHighlight: "stHl", heroPost: "stPost", heroSub: "stSub", heroImage: "stHeroImg" };
+    Object.keys(map).forEach(function (k) { var v = $(map[k]).value.trim(); if (v) s[k] = v; });
+    DB.saveSettings(s).then(function () { $("settingsStatus").textContent = "Đã lưu ✓ — mở website (nhấn F5) để xem nội dung mới"; toast("Đã lưu nội dung trang chủ"); });
+  });
+  // Đo kích thước ảnh sản phẩm khi dán URL
+  $("pfImage").addEventListener("change", function () {
+    var v = this.value.trim(); if (!v) return;
+    probeDims(v, function (w, hh) { $("pfDims").textContent = "Ảnh chính: " + w + "×" + hh + " px — chuẩn khuyến nghị 1000×1000 px (vuông 1:1)" + (Math.abs(w / hh - 1) > 0.08 ? " — ⚠ ảnh chưa vuông, sẽ bị cắt khi hiển thị" : " ✓ đúng tỉ lệ vuông"); });
+  });
+
   /* ============ Sự kiện ============ */
   $("setupForm").addEventListener("submit", function (e) {
     e.preventDefault();
@@ -452,7 +532,7 @@ tr:hover td{background:#F7FAFF}
     t.addEventListener("click", function () {
       document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("active"); });
       t.classList.add("active");
-      ["orders", "customers", "products", "accounts"].forEach(function (k) { $("tab-" + k).hidden = k !== t.dataset.tab; });
+      ["orders", "customers", "products", "accounts", "home"].forEach(function (k) { $("tab-" + k).hidden = k !== t.dataset.tab; });
     });
   });
   $("orderSearch").addEventListener("input", renderOrders);
@@ -508,7 +588,7 @@ tr:hover td{background:#F7FAFF}
     DB.createAdmin(u, p1).then(function () { $("naErr").textContent = ""; e.target.reset(); toast("Đã tạo thêm tài khoản: " + u); renderAccounts(); })
       .catch(function (err) { $("naErr").textContent = err.message || "Có lỗi xảy ra"; });
   });
-  function compressImage(dataUrl) {
+  function compressImage(dataUrl, maxDim) {
     return new Promise(function (resolve) {
       var done = false; function fin(v) { if (!done) { done = true; resolve(v); } }
       try {
@@ -516,7 +596,7 @@ tr:hover td{background:#F7FAFF}
         img.onload = function () { try {
           var w = img.naturalWidth || img.width, hh = img.naturalHeight || img.height;
           if (!w || !hh) return fin(dataUrl);
-          var scale = Math.min(1, 1000 / Math.max(w, hh));
+          var scale = Math.min(1, (maxDim || 1000) / Math.max(w, hh));
           if (scale === 1 && dataUrl.length < 1500000) return fin(dataUrl);
           var cv = document.createElement("canvas");
           cv.width = Math.round(w * scale); cv.height = Math.round(hh * scale);

@@ -61,6 +61,7 @@
     grid.querySelectorAll("[data-cat]").forEach(function (b) {
       b.addEventListener("click", function () { setCategory(b.getAttribute("data-cat"), true); });
     });
+    observeReveals(grid);
     byId("footerCats").innerHTML = presentCats.slice(0, 6).map(function (c) {
       return '<li><a href="#san-pham" data-footcat="' + esc(c) + '">' + esc(c) + '</a></li>';
     }).join("");
@@ -316,6 +317,20 @@
     computePresentCats();
     renderCategories(); renderChips(); renderSections(); renderProducts();
   }
+  function applySettings(s) {
+    if (!s) return;
+    function t(id, v) { if (v) { var el = byId(id); if (el) el.textContent = v; } }
+    t("heroBadge", s.heroBadge); t("hLine1", s.heroLine1); t("hPre", s.heroPre);
+    t("hHl", s.heroHighlight); t("hPost", s.heroPost); t("heroSub", s.heroSub);
+    if (s.heroImage) { var im = byId("heroImg"); if (im) im.src = s.heroImage; }
+  }
+  function loadDynamicSettings() {
+    try { var ls = JSON.parse(localStorage.getItem("msl_settings") || "null"); if (ls) applySettings(ls); } catch (e) {}
+    if (!window.fetch) return;
+    fetch("/api/settings").then(function (r) { return r.json(); }).then(function (d) {
+      if (d && d.settings) { applySettings(d.settings); try { localStorage.setItem("msl_settings", JSON.stringify(d.settings)); } catch (e) {} }
+    }).catch(function () {});
+  }
   function loadDynamicProducts() {
     try {
       var ov = JSON.parse(localStorage.getItem("msl_products") || "null");
@@ -348,5 +363,6 @@
   renderProducts();
   renderCart();
   loadDynamicProducts();
+  loadDynamicSettings();
   observeReveals(document);
 })();
